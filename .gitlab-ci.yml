@@ -1,0 +1,48 @@
+stages:
+  - build
+
+
+build_and_push_backend_image:
+  stage: build
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
+  script:
+    - cd ./backend
+    - docker build -t ${DOCKER_BACKEND_IMAGE}:latest .
+    - docker push ${DOCKER_BACKEND_IMAGE}:latest
+  tags:
+    - docker
+  only:
+    refs:
+      - main
+    changes:
+      - backend/*
+
+
+build_and_push_frontend_image:
+  stage: build
+  image: docker:stable
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} ${DOCKER_REGISTRY}
+  script:
+    - cd ./frontend
+    - docker build -t ${DOCKER_FRONTEND_IMAGE}:latest .
+    - docker push ${DOCKER_FRONTEND_IMAGE}:latest
+  tags:
+    - docker
+  only:
+    refs:
+      - main
+    changes:
+      - frontend/*
